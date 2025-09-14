@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Maven / Java
+target/
+*.log
+*.class
+
+# IDEs
+.idea/
+.vscode/
+
+# Vagrant / VirtualBox
+.vagrant/
+*.box
