@@ -13,3 +13,4 @@ target/
 # Vagrant / VirtualBox
 .vagrant/
 *.box
+README.md.save
