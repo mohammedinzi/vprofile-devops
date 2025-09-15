@@ -53,4 +53,4 @@ rabbitmqctl set_permissions -p / test ".*" ".*" ".*"  # Full permissions
 # ------------------------------
 sudo
 systemctl restart rabbitmq-server
-sudo systemctl status rabbitmq-server   # Final status check
+#sudo systemctl status rabbitmq-server   # Final status check
