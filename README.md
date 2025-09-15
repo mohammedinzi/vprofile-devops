@@ -1,41 +1,60 @@
-# Vprofile DevOps Project 🚀
+# Vprofile DevOps Project 🚀 — Manual Provisioning Branch
 
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Tech Stack](https://img.shields.io/badge/stack-Nginx%20|%20Tomcat%20|%20MySQL%20|%20RabbitMQ%20|%20Memcache-blue)
 ![CI/CD](https://img.shields.io/badge/CI%2FCD-Jenkins-orange)
 
-A 3-tier web application deployed with Vagrant & VirtualBox — designed to demonstrate full-stack infrastructure setup, manual provisioning, and a roadmap toward automation, containerization, and cloud-native DevOps practices.
+This branch demonstrates the **manual setup** of the Vprofile 3-tier Java web application using **Vagrant + VirtualBox**.
+
+The focus here is:
+
+* Learning the fundamentals of provisioning services manually.
+* Understanding dependencies between DB, cache, queue, backend, and frontend.
+* Serving as a **baseline** before progressing to automation (`vagrant-automation`), Ansible, and containerization.
+
+👉 **Note:** This branch highlights my ability to set up infrastructure from scratch, service by service, before introducing automation tools.
 
 ---
 
 ## 🖼 Architecture
 
 ```
-Browser  →  Nginx (web01)  →  Tomcat (app01)  →  MySQL / Memcache / RabbitMQ
+Browser  →  Nginx (web01)  →  Tomcat (app01)  →  MySQL (db01), Memcache (mc01), RabbitMQ (rmq01)
 ```
 
-> Elasticsearch exists in the original project but is optional in this setup.
+📌 Elasticsearch exists in the original project but is optional here.
+📌 Architecture diagram → [docs/images/architecture.png](docs/images/architecture.png)
 
-📌 Architecture Diagram → [docs/images/architecture.png](docs/images/architecture.png)
+---
+
+## 🖥️ VM Topology
+
+| VM Name | Hostname | Role             | OS                   | IP Address    | Memory |
+| ------- | -------- | ---------------- | -------------------- | ------------- | ------ |
+| web01   | web01    | Nginx (frontend) | Ubuntu 22.04 (Jammy) | 192.168.56.11 | 800MB  |
+| app01   | app01    | Tomcat + Maven   | CentOS Stream 9      | 192.168.56.12 | 800MB  |
+| db01    | db01     | MySQL/MariaDB    | CentOS Stream 9      | 192.168.56.15 | 600MB  |
+| mc01    | mc01     | Memcache         | CentOS Stream 9      | 192.168.56.14 | 600MB  |
+| rmq01   | rmq01    | RabbitMQ         | CentOS Stream 9      | 192.168.56.16 | 600MB  |
 
 ---
 
 ## ⚙️ Tech Stack
 
-* Frontend / Proxy → Nginx
-* Application Layer → Tomcat 10, Java 17, Spring MVC
-* Database → MySQL (MariaDB)
-* Cache → Memcache
-* Messaging → RabbitMQ
-* Provisioning → Vagrant, VirtualBox
-* Build Tool → Maven 3.9
-* CI/CD → Jenkins (pipeline included in repo)
+* **Frontend / Proxy** → Nginx
+* **Application Layer** → Tomcat 10, Java 17, Spring MVC
+* **Database** → MySQL (MariaDB)
+* **Cache** → Memcache
+* **Messaging** → RabbitMQ
+* **Provisioning** → Vagrant + VirtualBox
+* **Build Tool** → Maven 3.9
+* **CI/CD** → Jenkins (pipeline included)
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## 🚀 Quick Start (Manual Setup)
 
-### 1. Prerequisites (on Mac / Linux)
+### 1. Install prerequisites
 
 * [VirtualBox](https://www.virtualbox.org/)
 * [Vagrant](https://developer.hashicorp.com/vagrant)
@@ -46,38 +65,46 @@ Browser  →  Nginx (web01)  →  Tomcat (app01)  →  MySQL / Memcache / Rabbit
   ```
 * Git
 
-### 2. VM Setup
+---
+
+### 2. Spin up VMs
 
 ```bash
 git clone https://github.com/mohammedinzi/vprofile-devops.git
-cd vprofile-devops/vagrant/Manual_provisioning
+cd vprofile-devops/vagrant/manual/provisioning_MacOSM1    # or provisioning_WinMacIntel
 vagrant up
 ```
 
-👉 The first run may take time. If it fails midway, run `vagrant up` again.
+👉 First run takes time (downloads base boxes).
+👉 If it fails midway:
+
+```bash
+vagrant up
+```
+
+again.
 
 ---
 
-## 📦 Service Provisioning
+## 📦 Service Provisioning (Manual Order)
 
 Provision in this strict order to avoid dependency issues:
 
-MySQL → Memcache → RabbitMQ → Tomcat → Nginx
+**MySQL → Memcache → RabbitMQ → Tomcat → Nginx**
 
 ---
 
-### 🔹 1. MySQL Setup
+### 🔹 1. MySQL Setup (Database Layer)
 
 ```bash
 vagrant ssh db01
 sudo -i
-dnf update -y
 dnf install epel-release git mariadb-server -y
 systemctl enable --now mariadb
 mysql_secure_installation
 ```
 
-Set root password as `admin123`.
+Set root password → `admin123`.
 
 Create DB & users:
 
@@ -91,43 +118,28 @@ FLUSH PRIVILEGES;
 Import data:
 
 ```bash
-cd /tmp
-git clone -b local https://github.com/hkhcoder/vprofile-project.git
-cd vprofile-project
-mysql -u root -padmin123 accounts < src/main/resources/db_backup.sql
+git clone -b local https://github.com/hkhcoder/vprofile-project.git /tmp/vprofile-project
+mysql -u root -padmin123 accounts < /tmp/vprofile-project/src/main/resources/db_backup.sql
 ```
 
-Open firewall:
+Firewall:
 
 ```bash
-systemctl enable --now firewalld
 firewall-cmd --zone=public --add-port=3306/tcp --permanent
 firewall-cmd --reload
 ```
 
 ---
 
-### 🔹 2. Memcache Setup
+### 🔹 2. Memcache Setup (Cache Layer)
 
 ```bash
 vagrant ssh mc01
 sudo -i
-dnf update -y
 dnf install memcached -y
 systemctl enable --now memcached
-```
-
-Allow external access:
-
-```bash
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/sysconfig/memcached
 systemctl restart memcached
-```
-
-Firewall:
-
-```bash
-systemctl enable --now firewalld
 firewall-cmd --add-port=11211/tcp --permanent
 firewall-cmd --add-port=11111/udp --permanent
 firewall-cmd --reload
@@ -135,12 +147,11 @@ firewall-cmd --reload
 
 ---
 
-### 🔹 3. RabbitMQ Setup
+### 🔹 3. RabbitMQ Setup (Messaging Layer)
 
 ```bash
 vagrant ssh rmq01
 sudo -i
-dnf update -y
 dnf -y install centos-release-rabbitmq-38
 dnf --enablerepo=centos-rabbitmq-38 -y install rabbitmq-server
 systemctl enable --now rabbitmq-server
@@ -163,19 +174,17 @@ rabbitmqctl set_permissions -p / test ".*" ".*" ".*"
 Firewall:
 
 ```bash
-systemctl enable --now firewalld
 firewall-cmd --add-port=5672/tcp --permanent
 firewall-cmd --reload
 ```
 
 ---
 
-### 🔹 4. Tomcat Setup
+### 🔹 4. Tomcat Setup (Application Layer)
 
 ```bash
 vagrant ssh app01
 sudo -i
-dnf update -y
 dnf install java-17-openjdk java-17-openjdk-devel git wget -y
 ```
 
@@ -190,44 +199,20 @@ cp -r apache-tomcat-10.1.26/* /usr/local/tomcat/
 chown -R tomcat.tomcat /usr/local/tomcat
 ```
 
-Systemd Service:
+Systemd service file is provided in repo (`tomcat.service`).
 
-```ini
-[Unit]
-Description=Tomcat
-After=network.target
-
-[Service]
-User=tomcat
-Group=tomcat
-WorkingDirectory=/usr/local/tomcat
-Environment=JAVA_HOME=/usr/lib/jvm/jre
-Environment=CATALINA_PID=/var/tomcat/%i/run/tomcat.pid
-Environment=CATALINA_HOME=/usr/local/tomcat
-Environment=CATALINA_BASE=/usr/local/tomcat
-ExecStart=/usr/local/tomcat/bin/catalina.sh run
-ExecStop=/usr/local/tomcat/bin/shutdown.sh
-RestartSec=10
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Start & open firewall:
+Start Tomcat + firewall:
 
 ```bash
 systemctl daemon-reload
 systemctl enable --now tomcat
-systemctl enable --now firewalld
 firewall-cmd --zone=public --add-port=8080/tcp --permanent
 firewall-cmd --reload
 ```
 
-#### Deploy Code
+#### Deploy Application
 
 ```bash
-cd /tmp
 wget https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip
 unzip apache-maven-3.9.9-bin.zip
 cp -r apache-maven-3.9.9 /usr/local/maven3.9
@@ -235,29 +220,25 @@ export MAVEN_OPTS="-Xmx512m"
 
 git clone -b local https://github.com/hkhcoder/vprofile-project.git
 cd vprofile-project
-vim src/main/resources/application.properties   # Update DB, cache, MQ configs
-
 /usr/local/maven3.9/bin/mvn install
 
 systemctl stop tomcat
 rm -rf /usr/local/tomcat/webapps/ROOT*
 cp target/vprofile-v2.war /usr/local/tomcat/webapps/ROOT.war
-chown tomcat.tomcat /usr/local/tomcat/webapps -R
 systemctl restart tomcat
 ```
 
 ---
 
-### 🔹 5. Nginx Setup
+### 🔹 5. Nginx Setup (Frontend Layer)
 
 ```bash
 vagrant ssh web01
 sudo -i
-apt update && apt upgrade -y
-apt install nginx -y
+apt update && apt install nginx -y
 ```
 
-Reverse Proxy config (`/etc/nginx/sites-available/vproapp`):
+Config (`/etc/nginx/sites-available/vproapp`):
 
 ```nginx
 upstream vproapp {
@@ -272,7 +253,7 @@ server {
 }
 ```
 
-Enable site:
+Enable config:
 
 ```bash
 rm -rf /etc/nginx/sites-enabled/default
@@ -284,34 +265,32 @@ systemctl restart nginx
 
 ## ✅ Verification
 
-Open in browser:
+* Open in browser:
 
-```
-http://<web01-ip>
-```
+  ```
+  http://192.168.56.11
+  ```
 
-You should see the Vprofile App running 🎉
+  🎉 The Vprofile App should be running.
 
 ---
 
-## 🧠 Memory Trick
+## 🧠 Memory Trick (V M R T N)
 
-Think of V M R T N:
-
-* V → Vagrant (VM setup)
-* M → MySQL
-* R → RabbitMQ
-* T → Tomcat
-* N → Nginx
+* **V** → Vagrant (setup VMs)
+* **M** → MySQL
+* **R** → RabbitMQ
+* **T** → Tomcat
+* **N** → Nginx
 
 ---
 
 ## 🔮 Future Enhancements
 
-* 🐧 Provisioning with Ansible (instead of manual commands)
-* 📦 Containerization with Docker Compose / Kubernetes
-* 🔄 CI/CD with Jenkins Pipelines (already included)
-* 📊 Monitoring with Prometheus + Grafana
+* 🐧 Replace manual steps with **Ansible automation**
+* 📦 Containerize with **Docker & Kubernetes**
+* 🔄 Add **CI/CD pipelines** in Jenkins
+* 📊 Introduce **monitoring (Prometheus + Grafana)**
 
 ---
 
