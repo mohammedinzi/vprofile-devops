@@ -1,36 +1,64 @@
 #!/bin/bash
+# ---------------------------------------------------------
+# mysql.sh
+# Purpose: Provision MySQL (MariaDB) as the database layer 
+# for the Vprofile 3-tier application.
+# ---------------------------------------------------------
+
+# Define root DB password for automation
 DATABASE_PASS='admin123'
-sudo yum update -y
-sudo yum install epel-release -y
-sudo yum install git zip unzip -y
-sudo yum install mariadb-server -y
 
+# ------------------------------
+# Install Required Packages
+# ------------------------------
+sudo yum update -y                 # Update system packages
+sudo yum install epel-release -y   # Enable Extra Packages for Enterprise Linux
+sudo yum install git zip unzip -y  # Tools needed for cloning and unzipping
+sudo yum install mariadb-server -y # Install MariaDB (MySQL-compatible)
 
-# starting & enabling mariadb-server
-sudo systemctl start mariadb
-sudo systemctl enable mariadb
+# ------------------------------
+# Start and Enable MariaDB Service
+# ------------------------------
+sudo systemctl start mariadb       # Start MariaDB now
+sudo systemctl enable mariadb      # Enable auto-start on boot
+
+# ------------------------------
+# Prepare Database
+# ------------------------------
 cd /tmp/
-git clone -b main https://github.com/hkhcoder/vprofile-project.git
-#restore the dump file for the application
-sudo mysqladmin -u root password "$DATABASE_PASS"
-sudo mysql -u root -p"$DATABASE_PASS" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1')"
+git clone -b main https://github.com/hkhcoder/vprofile-project.git  # Clone repo for DB dump
+
+# Secure MariaDB (non-interactive mysql_secure_installation)
+sudo mysqladmin -u root password "$DATABASE_PASS"   # Set root password
+# Remove insecure/default users and test DBs
+sudo mysql -u root -p"$DATABASE_PASS" -e "DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost','127.0.0.1','::1')"
 sudo mysql -u root -p"$DATABASE_PASS" -e "DELETE FROM mysql.user WHERE User=''"
 sudo mysql -u root -p"$DATABASE_PASS" -e "DELETE FROM mysql.db WHERE Db='test' OR Db='test\_%'"
 sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
-sudo mysql -u root -p"$DATABASE_PASS" -e "create database accounts"
-sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'localhost' identified by 'admin123'"
-sudo mysql -u root -p"$DATABASE_PASS" -e "grant all privileges on accounts.* TO 'admin'@'%' identified by 'admin123'"
+
+# Create application database and grant privileges
+sudo mysql -u root -p"$DATABASE_PASS" -e "CREATE DATABASE accounts"
+sudo mysql -u root -p"$DATABASE_PASS" -e "GRANT ALL PRIVILEGES ON accounts.* TO 'admin'@'localhost' IDENTIFIED BY 'admin123'"
+sudo mysql -u root -p"$DATABASE_PASS" -e "GRANT ALL PRIVILEGES ON accounts.* TO 'admin'@'%' IDENTIFIED BY 'admin123'"
+
+# Load initial data from repo (application schema + seed data)
 sudo mysql -u root -p"$DATABASE_PASS" accounts < /tmp/vprofile-project/src/main/resources/db_backup.sql
+
+# Reapply privileges
 sudo mysql -u root -p"$DATABASE_PASS" -e "FLUSH PRIVILEGES"
 
-# Restart mariadb-server
+# ------------------------------
+# Restart DB Service
+# ------------------------------
 sudo systemctl restart mariadb
 
-
-#starting the firewall and allowing the mariadb to access from port no. 3306
+# ------------------------------
+# Configure Firewall for External Access
+# ------------------------------
 sudo systemctl start firewalld
 sudo systemctl enable firewalld
-sudo firewall-cmd --get-active-zones
-sudo firewall-cmd --zone=public --add-port=3306/tcp --permanent
-sudo firewall-cmd --reload
-sudo systemctl restart mariadb
+sudo firewall-cmd --get-active-zones                        # Show zones (debugging aid)
+sudo firewall-cmd --zone=public --add-port=3306/tcp --permanent  # Allow MySQL traffic
+sudo firewall-cmd --reload                                  # Apply rules
+sudo systemctl restart mariadb                              # Restart DB with firewall active
+sudo systemctl status mariadb                               # Final status check
