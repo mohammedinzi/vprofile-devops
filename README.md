@@ -6,7 +6,7 @@ Provisioning is handled through **bash scripts** + EC2 User Data, replacing Vagr
 ---
 
 ## 📌 Architecture Overview
-![Architecture](architecture/diagram.JPG)
+![Architecture](architecture/aws-architecture.png)
 
 **Flow**  
 User → Application Load Balancer (HTTP/HTTPS) → Auto Scaling Group (Tomcat EC2s)  
