@@ -44,4 +44,4 @@ firewall-cmd --runtime-to-permanent
 # ------------------------------
 # -p → TCP port, -U → UDP port, -u → user, -d → daemon mode
 sudo memcached -p 11211 -U 11111 -u memcached -d
-sudo systemctl status memcached    # Final status check
+# sudo systemctl status memcached    # Final status check

@@ -61,4 +61,4 @@ sudo firewall-cmd --get-active-zones                        # Show zones (debugg
 sudo firewall-cmd --zone=public --add-port=3306/tcp --permanent  # Allow MySQL traffic
 sudo firewall-cmd --reload                                  # Apply rules
 sudo systemctl restart mariadb                              # Restart DB with firewall active
-sudo systemctl status mariadb                               # Final status check
+# sudo systemctl status mariadb                               # Final status check

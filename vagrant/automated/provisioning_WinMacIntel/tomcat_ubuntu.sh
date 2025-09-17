@@ -28,4 +28,4 @@ sudo apt install openjdk-8-jdk -y
 sudo apt install tomcat8 tomcat8-admin tomcat8-docs tomcat8-common git -y
 sudo systemctl start tomcat8        # Start Tomcat service
 sudo systemctl enable tomcat8       # Enable Tomcat to start on boot
-sudo systemctl status tomcat8       # Check if Tomcat is running
+# sudo systemctl status tomcat8       # Check if Tomcat is running

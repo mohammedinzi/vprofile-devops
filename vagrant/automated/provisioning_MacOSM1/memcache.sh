@@ -24,4 +24,4 @@ firewall-cmd --runtime-to-permanent
 
 # Run Memcache as daemon
 sudo memcached -p 11211 -U 11111 -u memcached -d
-sudo systemctl status memcached        # Final status check
+# sudo systemctl status memcached        # Final status check
