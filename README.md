@@ -142,18 +142,6 @@ Each branch has **its own detailed README** with step-by-step instructions.
 
 ---
 
-## 🏆 Why This Project Stands Out
-
-* **Hands-on enterprise simulation** — more than just a tutorial
-* **Designed with FAANG-level interview prep in mind**
-* **Shows problem-solving progression**, not just final state
-* **Cloud-native ready**, aligned with modern DevOps hiring trends
-* **Fully modular architecture** for recruiters and engineers to explore
-
-This project isn’t just a code repo — it’s a **career showcase**, illustrating deep understanding of **DevOps concepts, AWS services, automation, and scalable design**.
-
----
-
 ## 📜 License
 
 Licensed under the [MIT License](LICENSE).
