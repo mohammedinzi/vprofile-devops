@@ -133,18 +133,18 @@ Each branch has **its own detailed README** with step-by-step instructions.
 
 | **Stage**                    | **Status**     |
 | ---------------------------- | -------------- |
-| Manual provisioning          | ✅ Completed   |
-| Automated provisioning       | ✅ Completed   |
-| AWS Lift & Shift Migration   | ✅ Completed   |
-| Jenkins/GitHub Actions CI/CD | 🔜 Coming soon |
+| Manual provisioning          | ✅ Completed    |
+| Automated provisioning       | ✅ Completed    |
+| AWS Lift & Shift Migration   | ✅ Completed    |
+| Ansible for config mgmt      | 🔜 Coming soon |
 | Docker + Kubernetes          | 🔜 Coming soon |
-| Ansible for config mgmt.     | 🔜 Coming soon |
+| Jenkins/GitHub Actions CI/CD | 🔜 Coming soon |
 
 ---
 
 ## 📜 License
 
 Licensed under the [MIT License](LICENSE).
-##Free to use, modify, and enhance for learning purposes.
+Free to use, modify, and enhance for learning purposes.
 
 ---
