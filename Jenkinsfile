@@ -1,12 +1,11 @@
 pipeline {
     
 	agent any
-	
+/*	
 	tools {
-	jdk "JDK17"	
-        maven "MAVEN3.9"
+        maven "maven3"
     }
-	
+*/	
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
