@@ -1,150 +1,120 @@
-# 🚀 VProfile DevOps Mega Project
+# VProfile DevOps: From Vagrant to AWS, CI/CD and Containers
 
-> **End-to-end DevSecOps showcase** — from **local Vagrant environments** to **full AWS cloud migration**, demonstrating **real-world production-ready workflows**.
+[![CI](https://github.com/mohammedinzi/vprofile-devops/actions/workflows/ci.yml/badge.svg)](https://github.com/mohammedinzi/vprofile-devops/actions/workflows/ci.yml)
+![Java 17](https://img.shields.io/badge/Java-17-orange)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue)
 
-A **three-tier Java web application** meticulously designed and built to **demonstrate the complete DevOps journey**:
+A hands-on DevOps portfolio built around one real **3-tier Java application** (Nginx, Tomcat/Spring MVC, MySQL, Memcached, RabbitMQ). The same app is deployed four ways, and each way lives on its own branch, so you can see how the delivery model matures from manual servers to cloud and containers.
 
-* **Traditional manual provisioning** → setting the baseline
-* **Infrastructure-as-Code automation** → enabling repeatable, scalable setups
-* **Cloud migration to AWS** → leveraging auto-scaling, load balancing, and private networking
-* **Future vision** → complete cloud-native DevSecOps with CI/CD, container orchestration, and security integration
+> **For recruiters and interviewers:** start with the [30-second summary](#30-second-summary), then the [skills map](#skills-demonstrated). Deeper talking points, trade-offs and lessons learned are in [`docs/INTERVIEW-GUIDE.md`](docs/INTERVIEW-GUIDE.md).
 
-This project isn’t just a demo — it’s **a living portfolio piece** crafted to **showcase real-world problem-solving skills**, **enterprise-grade architecture**, and **modern DevOps best practices**.
+## 30-second summary
 
----
+| Question | Answer |
+|---|---|
+| What did I build? | A full delivery path for one app: manual VMs, scripted VMs, AWS lift-and-shift, a Jenkins/SonarQube/Nexus pipeline, and Docker/ECR. |
+| What did I own? | Architecture, provisioning scripts, AWS networking and security groups, the CI/CD pipeline, and the documentation. |
+| What's the outcome? | Setup went from a long manual runbook to one command (`vagrant up`) locally, and a repeatable, load-balanced, autoscaled deployment on AWS. |
+| What would I do next? | Terraform for the AWS layer, Kubernetes for the app tier, secrets in AWS Secrets Manager. See the [roadmap](#roadmap). |
 
-## 🖼 Architecture
+## Architecture
 
-### **Local Environment (Vagrant Setup)**
-
-> Classic **on-premise style deployment** — perfect for simulating a data-center environment on your laptop.
-
-```
-Browser
-   ↓
-Nginx (web01)
-   ↓
-Tomcat (app01)
-   ↓
-MySQL (db01) + Memcached (mc01) + RabbitMQ (rmq01)
-```
-
-📌 Architecture Diagram → `docs/images/architecture.png`
-
----
-
-### **AWS Cloud Environment (Lift & Shift Migration)**
-
-> Modern **cloud-first architecture** leveraging **AWS services** for scalability and resilience.
+**Local (Vagrant)**: five VMs that mimic a small data centre.
 
 ```
-User
-   ↓
-AWS Application Load Balancer (HTTPS)
-   ↓
-Auto Scaling Group → Tomcat EC2 instances
-   ↓
-Private Subnet → MySQL, Memcached, RabbitMQ
-   ↓
-S3 → Artifact Storage
-   ↓
-Route 53 → Private DNS
+Browser -> Nginx (web01) -> Tomcat (app01) -> MySQL (db01) + Memcached (mc01) + RabbitMQ (rmq01)
 ```
 
-📌 AWS Cloud Architecture → `docs/images/aws-architecture.png`
+![Local architecture](docs/images/architecture.png)
 
----
+**AWS (lift and shift)**: the app tier is stateless and autoscaled; data services sit in private subnets.
 
-## ⚙️ Tech Stack Overview
+```
+User -> Route 53 -> ALB (HTTPS, ACM cert) -> Auto Scaling Group (Tomcat EC2)
+                                              -> private subnet: MySQL, Memcached, RabbitMQ
+Build artifact (WAR) -> S3 -> pulled by EC2 via IAM role
+```
 
-| **Category**           | **Technologies Used**                               |
-| ---------------------- | --------------------------------------------------- |
-| **Provisioning**       | Vagrant, Shell Scripts, AWS EC2, Route 53, ALB, ASG |
-| **Configuration Mgmt** | Shell Scripts, User Data *(Future: Ansible)*        |
-| **Operating Systems**  | CentOS Stream 9, Ubuntu 22.04, Amazon Linux 2023    |
-| **Application Layer**  | Tomcat 10, Java 17, Spring MVC                      |
-| **Database**           | MySQL (MariaDB)                                     |
-| **Caching**            | Memcached                                           |
-| **Messaging**          | RabbitMQ                                            |
-| **Build & Packaging**  | Maven 3.9                                           |
-| **CI/CD**              | Jenkins Pipelines *(GitHub Actions upcoming)*       |
+![AWS architecture](docs/images/aws-architecture.png)
 
----
+## The journey: one branch per stage
 
-## 🌱 Repository Branches — *The DevOps Journey*
+| Stage | Branch | What it demonstrates |
+|---|---|---|
+| 1. Manual provisioning | [`vagrant-manual`](../../tree/vagrant-manual) | Understanding every service before automating it. Step-by-step runbooks. |
+| 2. Automated provisioning | [`vagrant-automation`](../../tree/vagrant-automation) | Infrastructure as Code with Vagrant and shell provisioning scripts. |
+| 3. Cloud migration | [`awsliftandshift`](../../tree/awsliftandshift) | EC2, ALB with ACM TLS, ASG, Route 53 private DNS, S3, IAM roles, security-group design. |
+| 4. CI/CD | [`atom`](../../tree/atom) | Jenkins, Maven, Checkstyle, SonarQube quality gate, Nexus artifact versioning, Slack alerts. |
+| 5. Containers | [`atom-docker-ecr`](../../tree/atom-docker-ecr) | Multi-stage Dockerfiles, docker-compose for the full stack, image push to Amazon ECR. |
+| Reference | [`prerequisites`](../../tree/prerequisites) | Tooling and environment setup notes. |
+| Integration | `develop` / `main` | Integration branch and stable release. |
 
-This repository is structured as a **progressive journey**, each branch building on the previous stage:
+## Skills demonstrated
 
-| **Branch Name**             | **What It Demonstrates**                                                 |
-| --------------------------- | ------------------------------------------------------------------------ |
-| `vagrant-manual`            | 🏗 **Manual provisioning** with Vagrant + Shell scripts (baseline setup) |
-| `vagrant-automation`        | ⚡ **Automated provisioning** using streamlined scripts                   |
-| `awsliftandshift`           | ☁ **AWS Lift & Shift Migration** — EC2, ALB, ASG, IAM, Route53, S3       |
-| *(future)* `ansible-config` | 🔧 Configuration Management with **Ansible**                             |
-| *(future)* `docker-k8s`     | 🐳 **Containerization** with Docker & Kubernetes                         |
-| *(future)* `cicd-pipelines` | 🚀 **CI/CD pipelines** using Jenkins and GitHub Actions                  |
+| Area | Evidence in this repo |
+|---|---|
+| Linux and networking | CentOS/Ubuntu/Amazon Linux provisioning, service units, firewall and security-group rules |
+| IaC / config management | Vagrantfiles, shell provisioning, EC2 user data, Ansible playbooks in [`ansible/`](ansible) |
+| AWS | EC2, VPC subnets, ALB + ACM, ASG + launch templates, Route 53, S3, IAM (branch `awsliftandshift`) |
+| CI/CD | [`Jenkinsfile`](Jenkinsfile): build, unit and integration test, Checkstyle, Sonar quality gate, Nexus publish; GitHub Actions in [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| Containers | Multi-stage builds and compose files (branch `atom-docker-ecr`) |
+| Security hygiene | No secrets in git (env-driven config), secret scanning with gitleaks in CI, least-privilege security groups |
+| Troubleshooting | Documented real failures: full disks, wrong IPs, failing quality gates, sticky-session logins behind an ALB |
 
----
+## Quick start
 
-## 🧪 Features & Highlights
-
-* **Step-by-step progression** → From zero automation to fully cloud-native
-* **Enterprise-grade security & networking** → Private subnets, Route53, IAM best practices
-* **Scalable AWS deployment** → Auto Scaling Groups + Load Balancing
-* **Future-ready roadmap** → Container orchestration & automated pipelines
-* **Beginner-friendly onboarding** → Each branch has its own README with crystal-clear setup steps
-* **Production-like simulation** → Mirrors how Fortune 500 companies handle real deployments
-
----
-
-## 🚀 Quick Start Guide
-
-> Spin up the environment in **minutes**, and explore each stage of the journey.
-
-### 1️⃣ Clone the repository
+Local lab (needs Vagrant and VirtualBox, or VMware on Apple Silicon):
 
 ```bash
 git clone https://github.com/mohammedinzi/vprofile-devops.git
 cd vprofile-devops
+git checkout vagrant-automation
+cd vagrant/automated/provisioning_WinMacIntel   # or provisioning_MacOSM1
+vagrant up
 ```
 
----
-
-### 2️⃣ Choose a branch
-
-Pick a branch to start exploring:
+Build and test the app only (Java 17, Maven 3.9):
 
 ```bash
-# Manual provisioning
-git checkout vagrant-manual  
-
-# Automation with scripts
-git checkout vagrant-automation  
-
-# AWS cloud migration
-git checkout awsliftandshift  
+mvn -B clean verify        # produces target/vprofile-v2.war
 ```
 
-Each branch has **its own detailed README** with step-by-step instructions.
+## Configuration and secrets
 
----
+All settings in [`src/main/resources/application.properties`](src/main/resources/application.properties) read environment variables, with safe lab defaults:
 
-## 🔮 Project Roadmap
+| Variable | Purpose | Default |
+|---|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_NAME` | MySQL location | `db01`, `3306`, `accounts` |
+| `DB_USER`, `DB_PASSWORD` | MySQL credentials | `admin`, `change-me` |
+| `RABBITMQ_HOST`, `RABBITMQ_USER`, `RABBITMQ_PASSWORD` | Message broker | `rmq01`, `test`, `change-me` |
+| `MEMCACHED_HOST` | Cache | `mc01` |
+| `APP_ADMIN_USER`, `APP_ADMIN_PASSWORD` | App admin login | `admin_vp`, `change-me` |
 
-| **Stage**                    | **Status**     |
-| ---------------------------- | -------------- |
-| Manual provisioning          | ✅ Completed    |
-| Automated provisioning       | ✅ Completed    |
-| AWS Lift & Shift Migration   | ✅ Completed    |
-| Ansible for config mgmt      | 🔜 Coming soon |
-| Docker + Kubernetes          | 🔜 Coming soon |
-| Jenkins/GitHub Actions CI/CD | 🔜 Coming soon |
+In real environments these come from Jenkins credentials or AWS SSM Parameter Store / Secrets Manager, never from the repo.
 
----
+## CI/CD pipeline
 
-## 📜 License
+```
+Checkout -> Build -> Unit test -> Integration test -> Checkstyle -> SonarQube + quality gate -> Publish WAR to Nexus
+```
+
+The Nexus host is a pipeline parameter, builds are time-limited, test reports are published, and the workspace is cleaned afterwards. GitHub Actions runs build, test and a secret scan on every push and pull request.
+
+## Roadmap
+
+- [x] Manual and automated Vagrant provisioning
+- [x] AWS lift and shift
+- [x] Jenkins, SonarQube, Nexus, Slack pipeline
+- [x] Docker and docker-compose, ECR push
+- [x] GitHub Actions CI and secret scanning
+- [ ] Terraform for the AWS layer
+- [ ] Kubernetes (EKS) deployment with Helm
+- [ ] Monitoring with Prometheus and Grafana
+- [ ] Secrets in AWS Secrets Manager
+
+## About
+
+Built by **Mohammed Inzemam** as a practical DevOps learning and portfolio project. Connect on [GitHub](https://github.com/mohammedinzi).
 
 Licensed under the [MIT License](LICENSE).
-Free to use, modify, and enhance for learning purposes.
-
----

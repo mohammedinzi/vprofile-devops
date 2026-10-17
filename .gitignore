@@ -1,0 +1,9 @@
+target/
+.DS_Store
+*.log
+*.war
+.idea/
+.vscode/
+*.iml
+.vagrant/
+.env
